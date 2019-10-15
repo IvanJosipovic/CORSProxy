@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29319.158
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CorsProxy", "CorsProxy\CorsProxy.csproj", "{9BB4BF3C-4BB5-4C64-884A-11FF5DBF9B72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CORSProxy", "CORSProxy\CORSProxy.csproj", "{9BB4BF3C-4BB5-4C64-884A-11FF5DBF9B72}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
