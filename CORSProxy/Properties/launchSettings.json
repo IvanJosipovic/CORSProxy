@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "CorsProxy": {
+    "CORSProxy": {
       "commandName": "Project",
       "launchUrl": "api",
       "environmentVariables": {
