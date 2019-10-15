@@ -35,13 +35,19 @@ namespace CorsProxy
                         context.Response.StatusCode = 204;
                         
                         context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-                        context.Response.Headers.Add("Access-Control-Allow-Headers", "*");
                         context.Response.Headers.Add("Access-Control-Allow-Methods", "*");
-                        
+                        context.Response.Headers.Add("Access-Control-Allow-Headers", "*");
+                        context.Response.Headers.Add("Access-Control-Max-Age", "86400");
+
                         return Task.FromResult(true);
                     }
 
                     return Task.FromResult(false);
+                }).WithAfterReceive((c, hrm) =>
+                {
+                    hrm.Headers.Add("Access-Control-Allow-Origin", "*");
+
+                    return Task.CompletedTask;
                 });
 
             app.UseProxy("{*arg1}", async (args) =>
