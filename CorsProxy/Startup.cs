@@ -34,27 +34,23 @@ namespace CorsProxy
                     {
                         context.Response.StatusCode = 204;
                         
-                        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-                        context.Response.Headers.Add("Access-Control-Allow-Methods", "*");
-                        context.Response.Headers.Add("Access-Control-Allow-Headers", "*");
-                        context.Response.Headers.Add("Access-Control-Max-Age", "86400");
+                        context.Response.Headers.Add("Access-Control-Allow-Origin", Configuration.GetValue<string>("Access-Control-Allow-Origin"));
+                        context.Response.Headers.Add("Access-Control-Allow-Methods", Configuration.GetValue<string>("Access-Control-Allow-Methods"));
+                        context.Response.Headers.Add("Access-Control-Allow-Headers", Configuration.GetValue<string>("Access-Control-Allow-Headers"));
+                        context.Response.Headers.Add("Access-Control-Max-Age", Configuration.GetValue<string>("Access-Control-Max-Age"));
 
                         return Task.FromResult(true);
                     }
 
                     return Task.FromResult(false);
-                }).WithAfterReceive((c, hrm) =>
+                }).WithAfterReceive((context, response) =>
                 {
-                    hrm.Headers.Add("Access-Control-Allow-Origin", "*");
+                    response.Headers.Add("Access-Control-Allow-Origin", Configuration.GetValue<string>("Access-Control-Allow-Origin"));
 
                     return Task.CompletedTask;
                 });
 
-            app.UseProxy("{*arg1}", async (args) =>
-            {
-                string url = "http://localhost:8888/" + args["arg1"];
-                return await Task.FromResult<string>(url);
-            }, options);
+            app.UseProxy("{*arg}", (args) => Task.FromResult(Configuration.GetValue<string>("ProxyHostAddress").TrimEnd('/') + "/" + args["arg"]), options);
         }
     }
 }

@@ -18,7 +18,6 @@ namespace CorsProxy
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseKestrel(options => options.AddServerHeader = false);
