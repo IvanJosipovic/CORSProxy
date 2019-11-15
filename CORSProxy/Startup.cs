@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AspNetCore.Proxy;
 using Microsoft.AspNetCore.Builder;
@@ -20,11 +21,8 @@ namespace CORSProxy
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddProxies();
-        }
+            services.AddControllers();
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
             var options = ProxyOptions.Instance
                 .WithShouldAddForwardedHeaders(false)
                 .WithHttpClientName("ProxyClient")
@@ -33,11 +31,19 @@ namespace CORSProxy
                     if (context.Request.Method == "OPTIONS")
                     {
                         context.Response.StatusCode = 204;
-                        
-                        context.Response.Headers.Add("Access-Control-Allow-Origin", Configuration.GetValue<string>("Access-Control-Allow-Origin"));
-                        context.Response.Headers.Add("Access-Control-Allow-Methods", Configuration.GetValue<string>("Access-Control-Allow-Methods"));
-                        context.Response.Headers.Add("Access-Control-Allow-Headers", Configuration.GetValue<string>("Access-Control-Allow-Headers"));
-                        context.Response.Headers.Add("Access-Control-Max-Age", Configuration.GetValue<string>("Access-Control-Max-Age"));
+
+                        var headers = new List<string>
+                        {
+                            "Access-Control-Allow-Origin",
+                            "Access-Control-Allow-Methods",
+                            "Access-Control-Allow-Headers",
+                            "Access-Control-Allow-Max-Age"
+                        };
+
+                        foreach (var header in headers)
+                        {
+                            context.Response.Headers[header] = Configuration.GetValue<string>(header);
+                        }
 
                         return Task.FromResult(true);
                     }
@@ -45,12 +51,31 @@ namespace CORSProxy
                     return Task.FromResult(false);
                 }).WithAfterReceive((context, response) =>
                 {
-                    response.Headers.Add("Access-Control-Allow-Origin", Configuration.GetValue<string>("Access-Control-Allow-Origin"));
+                    const string header = "Access-Control-Allow-Origin";
+                    
+                    if (response.Headers.Contains(header))
+                    {
+                        response.Headers.Remove(header);
+                    }
+                    
+                    response.Headers.Add(header, Configuration.GetValue<string>(header));
 
                     return Task.CompletedTask;
                 });
 
-            app.UseProxy("{*arg}", (args) => Task.FromResult(Configuration.GetValue<string>("ProxyHostAddress").TrimEnd('/') + "/" + args["arg"]), options);
+            services.AddSingleton(options);
+
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }
