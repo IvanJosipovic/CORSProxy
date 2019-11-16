@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using AspNetCore.Proxy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
 
 namespace CORSProxy
@@ -19,7 +20,7 @@ namespace CORSProxy
         [Route("{*args}")]
         public Task Index()
         {
-            return this.ProxyAsync(Configuration.GetValue<string>("ProxyHostAddress").TrimEnd('/') + '/' + Request.Path + Request.QueryString, proxyOptions);
+            return this.ProxyAsync(Configuration.GetValue<string>("ProxyHostAddress").TrimEnd('/') + Request.Path + Request.QueryString, proxyOptions);
         }
     }
 }

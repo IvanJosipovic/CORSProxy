@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AspNetCore.Proxy;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,21 +29,25 @@ namespace CORSProxy
                 .WithHttpClientName("ProxyClient")
                 .WithIntercept(context =>
                 {
+                    const string header = "Access-Control-Allow-Origin";
+
+                    context.Response.Headers[header] = Configuration.GetValue<string>(header);
+
                     if (context.Request.Method == "OPTIONS")
                     {
                         context.Response.StatusCode = 204;
 
                         var headers = new List<string>
                         {
-                            "Access-Control-Allow-Origin",
+                            //"Access-Control-Allow-Origin",
                             "Access-Control-Allow-Methods",
                             "Access-Control-Allow-Headers",
                             "Access-Control-Allow-Max-Age"
                         };
 
-                        foreach (var header in headers)
+                        foreach (var hdr in headers)
                         {
-                            context.Response.Headers[header] = Configuration.GetValue<string>(header);
+                            context.Response.Headers[hdr] = Configuration.GetValue<string>(hdr);
                         }
 
                         return Task.FromResult(true);
@@ -53,14 +58,14 @@ namespace CORSProxy
                 {
                     const string header = "Access-Control-Allow-Origin";
                     
-                    if (response.Headers.Contains(header))
-                    {
-                        response.Headers.Remove(header);
-                    }
-                    
-                    response.Headers.Add(header, Configuration.GetValue<string>(header));
+                    context.Response.Headers[header] = Configuration.GetValue<string>(header);
 
                     return Task.CompletedTask;
+                }).WithHandleFailure(async (c, e) =>
+                {
+                    // Return a custom error response.
+                    c.Response.StatusCode = 403;
+                    await c.Response.WriteAsync("Things borked.");
                 });
 
             services.AddSingleton(options);
